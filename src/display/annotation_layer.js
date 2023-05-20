@@ -660,7 +660,7 @@ class LinkAnnotationElement extends AnnotationElement {
     link.href = this.linkService.getDestinationHash(destination);
     link.onclick = () => {
       if (destination) {
-        this.linkService.goToDestination(destination);
+        this.linkService.goToDestination(destination, link.id);
       }
       return false;
     };

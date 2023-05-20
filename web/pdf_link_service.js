@@ -180,7 +180,7 @@ class PDFLinkService {
     return this.pdfViewer.isInPresentationMode;
   }
 
-  #goToDestinationHelper(rawDest, namedDest = null, explicitDest) {
+  #goToDestinationHelper(rawDest, namedDest = null, explicitDest, link_id) {
     // Dest array looks like that: <page-ref> </XYZ|/FitXXX> <args..>
     const destRef = explicitDest[0];
     let pageNumber;
@@ -225,7 +225,7 @@ class PDFLinkService {
     if (this.pdfHistory) {
       // Update the browser history before scrolling the new destination into
       // view, to be able to accurately capture the current document position.
-      this.pdfHistory.pushCurrentPosition();
+      this.pdfHistory.pushCurrentPosition(link_id);
       this.pdfHistory.push({ namedDest, explicitDest, pageNumber });
     }
 
@@ -240,8 +240,9 @@ class PDFLinkService {
    * This method will, when available, also update the browser history.
    *
    * @param {string|Array} dest - The named, or explicit, PDF destination.
+   * @param {string} link_id - The ID of the jumping link, if any.
    */
-  async goToDestination(dest) {
+  async goToDestination(dest, link_id = null) {
     if (!this.pdfDocument) {
       return;
     }
@@ -260,7 +261,7 @@ class PDFLinkService {
       );
       return;
     }
-    this.#goToDestinationHelper(dest, namedDest, explicitDest);
+    this.#goToDestinationHelper(dest, namedDest, explicitDest, link_id);
   }
 
   /**
@@ -460,6 +461,13 @@ class PDFLinkService {
         )}" is not a valid destination.`
       );
     }
+  }
+
+  /**
+   * @param {string} link_id
+   */
+  highlightLink(link_id) {
+    this.pdfViewer.activateIndicator(link_id, 0, 0);
   }
 
   /**
@@ -677,8 +685,9 @@ class SimpleLinkService {
 
   /**
    * @param {string|Array} dest - The named, or explicit, PDF destination.
+   * @param {string} link_id - The ID of the jumping link, if any.
    */
-  async goToDestination(dest) {}
+  async goToDestination(dest, link_id = null) {}
 
   /**
    * @param {number|string} val - The page number, or page label.
@@ -714,6 +723,11 @@ class SimpleLinkService {
    * @param {string} hash
    */
   setHash(hash) {}
+
+  /**
+   * @param {string} link_id
+   */
+  highlightLink(link_id) {}
 
   /**
    * @param {string} action
