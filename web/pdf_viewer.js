@@ -1563,16 +1563,28 @@ class PDFViewer {
 
     // Show indicator for anchored scroll.
     if (destArray[0] !== null) {
-      let indicator = document.getElementById("scrollIndicator")
-      if (indicator === null) {
-        indicator = document.createElement("div");
-        indicator.id = "scrollIndicator";
-      }
-      indicator.style.cssText = "position: absolute; top: " + top + "px; left: " + left + "px; animation: fadeOut 3s;";
-      pageView.div.appendChild(indicator);
+      this.activateIndicator(pageView.div, top, left);
     }
 
     this.#scrollIntoView(pageView, /* pageSpot = */ { left, top });
+  }
+
+  activateIndicator(container, top, left) {
+    if (typeof container === "string")
+      container = document.getElementById(container);
+    while (container !== null && !container.classList.contains("page")) {
+      left = left + container.offsetLeft;
+      top = top + container.offsetTop;
+      container = container.parentElement;
+    }
+    if (!container) return;
+    let indicator = document.getElementById("scrollIndicator")
+    if (indicator === null) {
+      indicator = document.createElement("div");
+      indicator.id = "scrollIndicator";
+    }
+    indicator.style.cssText = "position: absolute; top: " + top + "px; left: " + left + "px; animation: fadeOut 3s;";
+    container.appendChild(indicator);
   }
 
   _updateLocation(firstPage) {
