@@ -309,9 +309,12 @@ class PDFHistory {
   /**
    * Push the current position to the browser history.
    */
-  pushCurrentPosition() {
+  pushCurrentPosition(link_id) {
     if (!this._initialized || this._popStateInProgress) {
       return;
+    }
+    if (this._position) {
+      this._position.new_link_id = link_id;
     }
     this.#tryPushCurrentPosition();
   }
@@ -410,6 +413,10 @@ class PDFHistory {
       return;
     }
     let position = this._position;
+    const link_id_usage_changed = (position.new_link_id || position.link_id) && !(position.new_link_id && position.link_id);
+    position.link_id = position.new_link_id;
+    delete position.new_link_id;
+
     if (temporary) {
       position = Object.assign(Object.create(null), this._position);
       position.temporary = true;
@@ -424,11 +431,11 @@ class PDFHistory {
       this.#pushOrReplaceState(position, /* forceReplace = */ true);
       return;
     }
-    if (this._destination.hash === position.hash) {
+    if (this._destination.hash === position.hash && !link_id_usage_changed) {
       return; // The current document position has not changed.
     }
     if (
-      !this._destination.page &&
+      !this._destination.page && !link_id_usage_changed
       (POSITION_UPDATED_THRESHOLD <= 0 ||
         this._numPositionUpdates <= POSITION_UPDATED_THRESHOLD)
     ) {
@@ -438,9 +445,9 @@ class PDFHistory {
       // since we cannot ensure that the document position has changed.
       return;
     }
-
     let forceReplace = false;
     if (
+      this._destination.page &&
       this._destination.page >= position.first &&
       this._destination.page <= position.page
     ) {
@@ -449,7 +456,7 @@ class PDFHistory {
       //  - contains an internal destination, since in this case we
       //    cannot ensure that the document position has actually changed.
       //  - was set through the user changing the hash of the document.
-      if (this._destination.dest !== undefined || !this._destination.first) {
+      if ((this._destination.dest !== undefined || !this._destination.first) && !link_id_usage_changed) {
         return;
       }
       // To avoid "flooding" the browser history, replace the current entry.
@@ -659,6 +666,10 @@ class PDFHistory {
     } else if (destination.page) {
       // Fallback case; shouldn't be necessary, but better safe than sorry.
       this.linkService.page = destination.page;
+    }
+
+    if (destination.link_id) {
+      this.linkService.highlightLink(destination.link_id);
     }
 
     // Since `PDFLinkService.goToDestination` is asynchronous, we thus defer the

@@ -133,7 +133,7 @@ class PDFLinkService {
    *
    * @param {string|Array} dest - The named, or explicit, PDF destination.
    */
-  async goToDestination(dest) {
+  async goToDestination(dest, link_id = null) {
     if (!this.pdfDocument) {
       return;
     }
@@ -182,7 +182,7 @@ class PDFLinkService {
     if (this.pdfHistory) {
       // Update the browser history before scrolling the new destination into
       // view, to be able to accurately capture the current document position.
-      this.pdfHistory.pushCurrentPosition();
+      this.pdfHistory.pushCurrentPosition(link_id);
       this.pdfHistory.push({ namedDest, explicitDest, pageNumber });
     }
 
@@ -422,6 +422,13 @@ class PDFLinkService {
     console.error(
       `PDFLinkService.setHash: "${unescape(hash)}" is not a valid destination.`
     );
+  }
+
+  /**
+   * @param {string} link_id
+   */
+  highlightLink(link_id) {
+    this.pdfViewer.activateIndicator(link_id, 0, 0);
   }
 
   /**

@@ -65,8 +65,9 @@ class IPDFLinkService {
 
   /**
    * @param {string|Array} dest - The named, or explicit, PDF destination.
+   * @param {string} link_id - The ID of the jumping link, if any.
    */
-  async goToDestination(dest) {}
+  async goToDestination(dest, link_id = null) {}
 
   /**
    * @param {number|string} val - The page number, or page label.
@@ -96,6 +97,17 @@ class IPDFLinkService {
    * @param {string} hash
    */
   setHash(hash) {}
+
+  /**
+   * @param {string} link_id
+   */
+  highlightLink(link_id) {}
+
+
+  /**
+   * @param {string} link_id
+   */
+  highlightLink(link_id) {}
 
   /**
    * @param {string} action
