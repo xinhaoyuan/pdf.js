@@ -62,6 +62,7 @@
     "ftp:/*",
     "file:/*",
     "chrome-extension:/*",
+    "moz-extension:/*",
     "blob:*",
     "data:*",
     "filesystem:/*",

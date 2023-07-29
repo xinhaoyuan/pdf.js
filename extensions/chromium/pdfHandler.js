@@ -168,6 +168,31 @@ chrome.webRequest.onBeforeRequest.addListener(
   ["blocking"]
 );
 
+// Rewrite moz-extension://.../[pdf-url] back to moz-extension://.../content/web/viewer.html?file=...
+// This is needed in Firefox since WebRequest url rewriting doesn't work with moz-extension://.  
+if (VIEWER_URL.startsWith('moz-extension://')) {
+  const extension_root = chrome.extension.getURL("")
+  const extension_pdf_url_pattern = new RegExp("^" + extension_root.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[^&#]*://")
+  chrome.webNavigation.onBeforeNavigate.addListener(
+    function (details) {
+      if (details.frameId !== 0 || details.url.startsWith(VIEWER_URL) || isPdfDownloadable(details))
+        return;
+      if (!extension_pdf_url_pattern.exec(details.url))
+        return;
+      chrome.tabs.update(details.tabId, {
+        url: getViewerURL(details.url.slice(extension_root.length)),
+      });
+    },
+    {
+      url: [
+        {
+          urlPrefix: "moz-extension://",
+        },
+      ],
+    }
+  )
+}
+
 chrome.extension.isAllowedFileSchemeAccess(function (isAllowedAccess) {
   if (isAllowedAccess) {
     return;
