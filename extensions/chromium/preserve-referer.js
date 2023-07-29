@@ -42,6 +42,8 @@ var g_requestHeaders = {};
 // g_referrers[tabId][frameId] = referrer of PDF frame.
 var g_referrers = {};
 
+const isFirefox = chrome.runtime.getURL('').startsWith('moz-extension://');
+
 (function () {
   var requestFilter = {
     urls: ["*://*/*"],
@@ -52,7 +54,7 @@ var g_referrers = {};
       g_requestHeaders[details.requestId] = details.requestHeaders;
     },
     requestFilter,
-    ["requestHeaders", "extraHeaders"]
+    isFirefox ? ["requestHeaders"] : ["requestHeaders", "extraHeaders"]
   );
   chrome.webRequest.onBeforeRedirect.addListener(forgetHeaders, requestFilter);
   chrome.webRequest.onCompleted.addListener(forgetHeaders, requestFilter);
@@ -114,7 +116,7 @@ chrome.runtime.onConnect.addListener(function onReceivePort(port) {
           types: ["xmlhttprequest"],
           tabId,
         },
-        ["blocking", "requestHeaders", "extraHeaders"]
+        isFirefox ? ["blocking", "requestHeaders"] : ["blocking", "requestHeaders", "extraHeaders"]
       );
     }
     // Acknowledge the message, and include the latest referer for this frame.

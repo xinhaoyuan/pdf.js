@@ -17,6 +17,7 @@ limitations under the License.
 "use strict";
 
 (function PageActionClosure() {
+  const isFirefox = chrome.runtime.getURL('').startsWith('moz-extension://');
   /**
    * @param {number} tabId - ID of tab where the page action will be shown.
    * @param {string} url - URL to be displayed in page action.
@@ -24,7 +25,11 @@ limitations under the License.
   function showPageAction(tabId, displayUrl) {
     // rewriteUrlClosure in viewer.js ensures that the URL looks like
     // chrome-extension://[extensionid]/http://example.com/file.pdf
-    var url = /^chrome-extension:\/\/[a-p]{32}\/([^#]+)/.exec(displayUrl);
+    if (isFirefox) {
+      var url = /^moz-extension:\/\/[-a-f0-9]+\/([^#]+)/.exec(displayUrl);
+    } else {
+      var url = /^chrome-extension:\/\/[a-p]{32}\/([^#]+)/.exec(displayUrl);
+    }
     if (url) {
       url = url[1];
       chrome.pageAction.setPopup({
